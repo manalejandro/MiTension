@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MiTensión</string>
+
+    <!-- Navigation -->
+    <string name="tab_new">Nueva</string>
+    <string name="tab_history">Histórico</string>
+    <string name="tab_reminders">Avisos</string>
+    <string name="tab_users">Usuarios</string>
+    <string name="tab_settings">Ajustes</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Bienvenido/a a MiTensión</string>
+    <string name="onboarding_subtitle">Apunta tu tensión arterial y tu pulso de forma sencilla. Para empezar, cuéntanos tu nombre.</string>
+    <string name="onboarding_name_label">Tu nombre</string>
+    <string name="onboarding_name_hint">Escribe tu nombre</string>
+    <string name="onboarding_button">Empezar</string>
+    <string name="onboarding_error_name">Escribe tu nombre para continuar</string>
+
+    <!-- Home / form -->
+    <string name="home_hello">Hola</string>
+    <string name="home_subtitle">Registra tu tensión arterial</string>
+    <string name="home_last_reading">Última toma</string>
+    <string name="home_no_readings">Todavía no hay tomas registradas</string>
+    <string name="home_systolic">Tensión máxima (sistólica)</string>
+    <string name="home_systolic_unit">mmHg</string>
+    <string name="home_diastolic">Tensión mínima (diastólica)</string>
+    <string name="home_pulse">Frecuencia cardíaca</string>
+    <string name="home_pulse_unit">ppm</string>
+    <string name="home_note">Nota (opcional)</string>
+    <string name="home_note_hint">P. ej. después de hacer ejercicio</string>
+    <string name="home_save">Guardar toma</string>
+    <string name="home_save_edit">Guardar cambios</string>
+    <string name="home_new_title">Nueva toma</string>
+    <string name="home_edit_title">Editar toma</string>
+    <string name="home_reading_saved">Toma guardada correctamente</string>
+    <string name="home_reading_updated">Toma actualizada correctamente</string>
+    <string name="home_active_user">Usuario activo</string>
+    <string name="home_switch_user">Cambiar</string>
+    <string name="home_cancel">Cancelar</string>
+    <string name="home_category">Clasificación</string>
+
+    <!-- Validation -->
+    <string name="err_required">Este campo es obligatorio</string>
+    <string name="err_systolic_range">Entre 60 y 260 mmHg</string>
+    <string name="err_diastolic_range">Entre 30 y 200 mmHg</string>
+    <string name="err_pulse_range">Entre 30 y 220 ppm</string>
+    <string name="err_sys_gt_dia">La máxima debe ser mayor que la mínima</string>
+    <string name="err_invalid_number">Introduce solo números</string>
+
+    <!-- History -->
+    <string name="history_title">Histórico</string>
+    <string name="history_empty">No hay tomas registradas. Añade tu primera toma en la pestaña \"Nueva\".</string>
+    <string name="history_last">Última</string>
+    <string name="history_average">Media</string>
+    <string name="history_readings_count">%1$d tomas</string>
+    <string name="history_edit">Editar</string>
+    <string name="history_delete">Eliminar</string>
+    <string name="history_delete_title">¿Eliminar esta toma?</string>
+    <string name="history_delete_message">Esta acción no se puede deshacer.</string>
+    <string name="history_cancel">Cancelar</string>
+    <string name="history_confirm_delete">Eliminar</string>
+    <string name="chart_legend_systolic">Sistólica</string>
+    <string name="chart_legend_diastolic">Diastólica</string>
+    <string name="chart_legend_pulse">Pulso</string>
+    <string name="chart_no_data">Sin datos para mostrar</string>
+
+    <!-- Blood pressure categories -->
+    <string name="category_low">Baja</string>
+    <string name="category_normal">Normal</string>
+    <string name="category_elevated">Normal-alta</string>
+    <string name="category_hyp1">Hipertensión grado 1</string>
+    <string name="category_hyp2">Hipertensión grado 2</string>
+
+    <!-- Reminders -->
+    <string name="reminders_title">Recordatorios</string>
+    <string name="reminders_subtitle">Te avisamos para que no olvides medirte la tensión por la mañana, al mediodía y por la tarde.</string>
+    <string name="reminder_morning">Por la mañana</string>
+    <string name="reminder_midday">Al mediodía</string>
+    <string name="reminder_evening">Por la tarde</string>
+    <string name="reminder_time">Hora</string>
+    <string name="reminder_sound">Sonido</string>
+    <string name="reminder_sound_default">Sonido por defecto</string>
+    <string name="reminder_sound_silent">Silencio</string>
+    <string name="reminder_enabled">Avisos activados</string>
+    <string name="reminder_disabled">Avisos desactivados</string>
+    <string name="reminder_perm_note">Permite las notificaciones de MiTensión para recibir los avisos.</string>
+    <string name="reminder_exact_alarm">Permitir hora exacta</string>
+    <string name="reminder_exact_alarm_desc">Para que los avisos lleguen a la hora exacta, permite a MiTensión programar alarmas exactas en los ajustes del sistema.</string>
+    <string name="reminder_open_settings">Abrir ajustes del sistema</string>
+
+    <!-- Users -->
+    <string name="users_title">Usuarios</string>
+    <string name="users_add">Añadir usuario</string>
+    <string name="users_name_label">Nombre del usuario</string>
+    <string name="users_name_hint">Escribe el nombre</string>
+    <string name="users_save">Guardar</string>
+    <string name="users_cancel">Cancelar</string>
+    <string name="users_active">Activo</string>
+    <string name="users_primary">Principal</string>
+    <string name="users_delete">Eliminar</string>
+    <string name="users_edit">Renombrar</string>
+    <string name="users_switch">Usar este usuario</string>
+    <string name="users_delete_title">¿Eliminar este usuario?</string>
+    <string name="users_delete_message">Se eliminarán también todas sus tomas.</string>
+    <string name="users_cannot_delete">No se puede eliminar el único usuario ni el usuario principal.</string>
+    <string name="users_new_title">Nuevo usuario</string>
+    <string name="users_rename_title">Renombrar usuario</string>
+    <string name="users_empty">No hay usuarios.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_language_es">Español</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_text_size">Tamaño del texto</string>
+    <string name="settings_text_normal">Normal</string>
+    <string name="settings_text_large">Grande</string>
+    <string name="settings_text_xlarge">Muy grande</string>
+    <string name="settings_about">MiTensión</string>
+    <string name="settings_about_desc">Registro de tensión arterial y frecuencia cardíaca.</string>
+    <string name="settings_notifications">Notificaciones</string>
+    <string name="settings_open_system">Abrir ajustes del sistema</string>
+    <string name="settings_version">Versión 1.0</string>
+
+    <!-- Notification -->
+    <string name="notification_text">Es hora de medir tu tensión y tu pulso. Toca para registrarla.</string>
+</resources>

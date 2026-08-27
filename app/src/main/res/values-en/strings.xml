@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MiTension</string>
+
+    <!-- Navigation -->
+    <string name="tab_new">New</string>
+    <string name="tab_history">History</string>
+    <string name="tab_reminders">Alerts</string>
+    <string name="tab_users">Users</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Welcome to MiTension</string>
+    <string name="onboarding_subtitle">Track your blood pressure and pulse easily. To get started, tell us your name.</string>
+    <string name="onboarding_name_label">Your name</string>
+    <string name="onboarding_name_hint">Type your name</string>
+    <string name="onboarding_button">Get started</string>
+    <string name="onboarding_error_name">Enter your name to continue</string>
+
+    <!-- Home / form -->
+    <string name="home_hello">Hello</string>
+    <string name="home_subtitle">Record your blood pressure</string>
+    <string name="home_last_reading">Last reading</string>
+    <string name="home_no_readings">No readings recorded yet</string>
+    <string name="home_systolic">Maximum pressure (systolic)</string>
+    <string name="home_systolic_unit">mmHg</string>
+    <string name="home_diastolic">Minimum pressure (diastolic)</string>
+    <string name="home_pulse">Heart rate</string>
+    <string name="home_pulse_unit">bpm</string>
+    <string name="home_note">Note (optional)</string>
+    <string name="home_note_hint">E.g. after exercising</string>
+    <string name="home_save">Save reading</string>
+    <string name="home_save_edit">Save changes</string>
+    <string name="home_new_title">New reading</string>
+    <string name="home_edit_title">Edit reading</string>
+    <string name="home_reading_saved">Reading saved successfully</string>
+    <string name="home_reading_updated">Reading updated successfully</string>
+    <string name="home_active_user">Active user</string>
+    <string name="home_switch_user">Change</string>
+    <string name="home_cancel">Cancel</string>
+    <string name="home_category">Classification</string>
+
+    <!-- Validation -->
+    <string name="err_required">This field is required</string>
+    <string name="err_systolic_range">Between 60 and 260 mmHg</string>
+    <string name="err_diastolic_range">Between 30 and 200 mmHg</string>
+    <string name="err_pulse_range">Between 30 and 220 bpm</string>
+    <string name="err_sys_gt_dia">Maximum must be greater than minimum</string>
+    <string name="err_invalid_number">Numbers only</string>
+
+    <!-- History -->
+    <string name="history_title">History</string>
+    <string name="history_empty">No readings recorded. Add your first reading in the \"New\" tab.</string>
+    <string name="history_last">Last</string>
+    <string name="history_average">Average</string>
+    <string name="history_readings_count">%1$d readings</string>
+    <string name="history_edit">Edit</string>
+    <string name="history_delete">Delete</string>
+    <string name="history_delete_title">Delete this reading?</string>
+    <string name="history_delete_message">This action cannot be undone.</string>
+    <string name="history_cancel">Cancel</string>
+    <string name="history_confirm_delete">Delete</string>
+    <string name="chart_legend_systolic">Systolic</string>
+    <string name="chart_legend_diastolic">Diastolic</string>
+    <string name="chart_legend_pulse">Pulse</string>
+    <string name="chart_no_data">No data to display</string>
+
+    <!-- Blood pressure categories -->
+    <string name="category_low">Low</string>
+    <string name="category_normal">Normal</string>
+    <string name="category_elevated">Elevated</string>
+    <string name="category_hyp1">Hypertension stage 1</string>
+    <string name="category_hyp2">Hypertension stage 2</string>
+
+    <!-- Reminders -->
+    <string name="reminders_title">Reminders</string>
+    <string name="reminders_subtitle">We remind you to measure your blood pressure in the morning, at noon and in the evening.</string>
+    <string name="reminder_morning">Morning</string>
+    <string name="reminder_midday">Midday</string>
+    <string name="reminder_evening">Evening</string>
+    <string name="reminder_time">Time</string>
+    <string name="reminder_sound">Sound</string>
+    <string name="reminder_sound_default">Default sound</string>
+    <string name="reminder_sound_silent">Silent</string>
+    <string name="reminder_enabled">Reminders on</string>
+    <string name="reminder_disabled">Reminders off</string>
+    <string name="reminder_perm_note">Allow MiTension notifications to receive reminders.</string>
+    <string name="reminder_exact_alarm">Allow exact time</string>
+    <string name="reminder_exact_alarm_desc">For reminders to fire at the exact time, allow MiTension to schedule exact alarms in the system settings.</string>
+    <string name="reminder_open_settings">Open system settings</string>
+
+    <!-- Users -->
+    <string name="users_title">Users</string>
+    <string name="users_add">Add user</string>
+    <string name="users_name_label">User name</string>
+    <string name="users_name_hint">Type the name</string>
+    <string name="users_save">Save</string>
+    <string name="users_cancel">Cancel</string>
+    <string name="users_active">Active</string>
+    <string name="users_primary">Primary</string>
+    <string name="users_delete">Delete</string>
+    <string name="users_edit">Rename</string>
+    <string name="users_switch">Use this user</string>
+    <string name="users_delete_title">Delete this user?</string>
+    <string name="users_delete_message">All of this user\'s readings will also be deleted.</string>
+    <string name="users_cannot_delete">You cannot delete the only user or the primary user.</string>
+    <string name="users_new_title">New user</string>
+    <string name="users_rename_title">Rename user</string>
+    <string name="users_empty">No users.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_es">Español</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_text_size">Text size</string>
+    <string name="settings_text_normal">Normal</string>
+    <string name="settings_text_large">Large</string>
+    <string name="settings_text_xlarge">Extra large</string>
+    <string name="settings_about">MiTension</string>
+    <string name="settings_about_desc">Blood pressure and heart rate tracker.</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_open_system">Open system settings</string>
+    <string name="settings_version">Version 1.0</string>
+
+    <!-- Notification -->
+    <string name="notification_text">It\'s time to measure your blood pressure and pulse. Tap to record it.</string>
+</resources>
