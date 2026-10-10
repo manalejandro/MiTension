@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.manalejandro.mitension.R
@@ -40,137 +41,179 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.roundToInt
 
+data class ChartSeriesUi(
+    val color: Color,
+    val values: List<Float>
+)
+
+/**
+ * Combined trend chart: systolic, diastolic and pulse over time.
+ */
 @Composable
 fun BloodPressureChart(readingsAscending: List<Reading>, modifier: Modifier = Modifier) {
+    if (readingsAscending.isEmpty()) return
+    Column(modifier = modifier.fillMaxWidth()) {
+        TimeSeriesChart(
+            timestamps = readingsAscending.map { it.timestamp },
+            series = listOf(
+                ChartSeriesUi(ChartSystolic, readingsAscending.map { it.systolic.toFloat() }),
+                ChartSeriesUi(ChartDiastolic, readingsAscending.map { it.diastolic.toFloat() }),
+                ChartSeriesUi(ChartPulse, readingsAscending.map { it.pulse.toFloat() })
+            ),
+            height = 240.dp
+        )
+        ChartLegend(
+            items = listOf(
+                ChartSystolic to str(R.string.chart_legend_systolic),
+                ChartDiastolic to str(R.string.chart_legend_diastolic),
+                ChartPulse to str(R.string.chart_legend_pulse)
+            )
+        )
+    }
+}
+
+/**
+ * Heart rate trend chart with its own scale so variations are clearly visible.
+ */
+@Composable
+fun PulseChart(readingsAscending: List<Reading>, modifier: Modifier = Modifier) {
+    if (readingsAscending.isEmpty()) return
+    Column(modifier = modifier.fillMaxWidth()) {
+        TimeSeriesChart(
+            timestamps = readingsAscending.map { it.timestamp },
+            series = listOf(
+                ChartSeriesUi(ChartPulse, readingsAscending.map { it.pulse.toFloat() })
+            ),
+            height = 180.dp
+        )
+    }
+}
+
+@Composable
+private fun TimeSeriesChart(
+    timestamps: List<Long>,
+    series: List<ChartSeriesUi>,
+    modifier: Modifier = Modifier,
+    height: Dp = 220.dp
+) {
     val textMeasurer = rememberTextMeasurer()
     val labelStyle = TextStyle(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontSize = 12.sp
     )
     val language = LocalAppLanguage.current
+    val colorScheme = MaterialTheme.colorScheme
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        val colorScheme = MaterialTheme.colorScheme
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(240.dp)
-        ) {
-            if (readingsAscending.isEmpty()) return@Canvas
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
+    ) {
+        if (timestamps.isEmpty() || series.isEmpty()) return@Canvas
 
-            val series = listOf(
-                ChartSeries(ChartSystolic, readingsAscending.map { it.systolic.toFloat() }),
-                ChartSeries(ChartDiastolic, readingsAscending.map { it.diastolic.toFloat() }),
-                ChartSeries(ChartPulse, readingsAscending.map { it.pulse.toFloat() })
-            )
+        val allValues = series.flatMap { it.values }
+        val rawMin = allValues.minOrNull() ?: return@Canvas
+        val rawMax = allValues.maxOrNull() ?: return@Canvas
+        val pad = max((rawMax - rawMin) * 0.12f, 8f)
+        val yMin = floor(rawMin - pad)
+        val yMax = ceil(rawMax + pad)
+        val ySpan = (yMax - yMin).coerceAtLeast(1f)
 
-            val allValues = series.flatMap { it.values }
-            val rawMin = allValues.minOrNull() ?: return@Canvas
-            val rawMax = allValues.maxOrNull() ?: return@Canvas
-            val pad = max((rawMax - rawMin) * 0.12f, 8f)
-            val yMin = floor(rawMin - pad)
-            val yMax = ceil(rawMax + pad)
-            val ySpan = (yMax - yMin).coerceAtLeast(1f)
+        val leftPad = 44.dp.toPx()
+        val bottomPad = 26.dp.toPx()
+        val topPad = 14.dp.toPx()
+        val rightPad = 16.dp.toPx()
+        val plotWidth = size.width - leftPad - rightPad
+        val plotHeight = size.height - topPad - bottomPad
 
-            val leftPad = 44.dp.toPx()
-            val bottomPad = 26.dp.toPx()
-            val topPad = 14.dp.toPx()
-            val rightPad = 16.dp.toPx()
-            val plotWidth = size.width - leftPad - rightPad
-            val plotHeight = size.height - topPad - bottomPad
+        fun y(value: Float): Float =
+            topPad + plotHeight * (1f - (value - yMin) / ySpan)
 
-            fun y(value: Float): Float =
-                topPad + plotHeight * (1f - (value - yMin) / ySpan)
-
-            fun x(index: Int): Float {
-                if (readingsAscending.size == 1) return leftPad + plotWidth / 2f
-                return leftPad + plotWidth * index / (readingsAscending.size - 1).toFloat()
-            }
-
-            val gridColor = colorScheme.outline.copy(alpha = 0.25f)
-            for (i in 0..3) {
-                val fraction = i / 3f
-                val yPos = topPad + plotHeight * (1f - fraction)
-                drawLine(
-                    color = gridColor,
-                    start = Offset(leftPad, yPos),
-                    end = Offset(size.width - rightPad, yPos),
-                    strokeWidth = 1.dp.toPx()
-                )
-                val value = yMin + ySpan * fraction
-                drawText(
-                    textMeasurer = textMeasurer,
-                    text = value.roundToInt().toString(),
-                    topLeft = Offset(4.dp.toPx(), yPos - 8.dp.toPx()),
-                    style = labelStyle
-                )
-            }
-
-            val dateFormat = SimpleDateFormat("d MMM", Locale.forLanguageTag(language))
-            val labelCount = minOf(4, readingsAscending.size)
-            for (i in 0 until labelCount) {
-                val index = if (labelCount == 1) 0
-                else (readingsAscending.size - 1) * i / (labelCount - 1)
-                val reading = readingsAscending[index]
-                val text = dateFormat.format(Date(reading.timestamp))
-                val textWidth = textMeasurer.measure(text, labelStyle).size.width
-                val xPos = x(index) - textWidth / 2f
-                drawText(
-                    textMeasurer = textMeasurer,
-                    text = text,
-                    topLeft = Offset(
-                        xPos.coerceIn(leftPad, (size.width - rightPad - textWidth).coerceAtLeast(leftPad)),
-                        size.height - 20.dp.toPx()
-                    ),
-                    style = labelStyle
-                )
-            }
-
-            series.forEach { s ->
-                val path = Path()
-                readingsAscending.indices.forEach { i ->
-                    val point = Offset(x(i), y(s.values[i]))
-                    if (i == 0) path.moveTo(point.x, point.y) else path.lineTo(point.x, point.y)
-                }
-                drawPath(
-                    path = path,
-                    color = s.color,
-                    style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-                )
-            }
-            series.forEach { s ->
-                readingsAscending.indices.forEach { i ->
-                    val point = Offset(x(i), y(s.values[i]))
-                    drawCircle(
-                        color = colorScheme.background,
-                        radius = 5.dp.toPx(),
-                        center = point
-                    )
-                    drawCircle(
-                        color = s.color,
-                        radius = 4.dp.toPx(),
-                        center = point
-                    )
-                }
-            }
+        fun x(index: Int): Float {
+            if (timestamps.size == 1) return leftPad + plotWidth / 2f
+            return leftPad + plotWidth * index / (timestamps.size - 1).toFloat()
         }
 
-        ChartLegend()
+        val gridColor = colorScheme.outline.copy(alpha = 0.25f)
+        for (i in 0..3) {
+            val fraction = i / 3f
+            val yPos = topPad + plotHeight * (1f - fraction)
+            drawLine(
+                color = gridColor,
+                start = Offset(leftPad, yPos),
+                end = Offset(size.width - rightPad, yPos),
+                strokeWidth = 1.dp.toPx()
+            )
+            val value = yMin + ySpan * fraction
+            drawText(
+                textMeasurer = textMeasurer,
+                text = value.roundToInt().toString(),
+                topLeft = Offset(4.dp.toPx(), yPos - 8.dp.toPx()),
+                style = labelStyle
+            )
+        }
+
+        val dateFormat = SimpleDateFormat("d MMM", Locale.forLanguageTag(language))
+        val labelCount = minOf(4, timestamps.size)
+        for (i in 0 until labelCount) {
+            val index = if (labelCount == 1) 0
+            else (timestamps.size - 1) * i / (labelCount - 1)
+            val text = dateFormat.format(Date(timestamps[index]))
+            val textWidth = textMeasurer.measure(text, labelStyle).size.width
+            val xPos = x(index) - textWidth / 2f
+            drawText(
+                textMeasurer = textMeasurer,
+                text = text,
+                topLeft = Offset(
+                    xPos.coerceIn(leftPad, (size.width - rightPad - textWidth).coerceAtLeast(leftPad)),
+                    size.height - 20.dp.toPx()
+                ),
+                style = labelStyle
+            )
+        }
+
+        series.forEach { s ->
+            val path = Path()
+            timestamps.indices.forEach { i ->
+                val point = Offset(x(i), y(s.values[i]))
+                if (i == 0) path.moveTo(point.x, point.y) else path.lineTo(point.x, point.y)
+            }
+            drawPath(
+                path = path,
+                color = s.color,
+                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+            )
+        }
+        series.forEach { s ->
+            timestamps.indices.forEach { i ->
+                val point = Offset(x(i), y(s.values[i]))
+                drawCircle(
+                    color = colorScheme.background,
+                    radius = 5.dp.toPx(),
+                    center = point
+                )
+                drawCircle(
+                    color = s.color,
+                    radius = 4.dp.toPx(),
+                    center = point
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun ChartLegend() {
+private fun ChartLegend(items: List<Pair<Color, String>>) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(18.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        LegendItem(ChartSystolic, str(R.string.chart_legend_systolic))
-        LegendItem(ChartDiastolic, str(R.string.chart_legend_diastolic))
-        LegendItem(ChartPulse, str(R.string.chart_legend_pulse))
+        items.forEach { (color, label) ->
+            LegendItem(color, label)
+        }
     }
 }
 
@@ -188,8 +231,3 @@ private fun LegendItem(color: Color, label: String) {
         )
     }
 }
-
-private data class ChartSeries(
-    val color: Color,
-    val values: List<Float>
-)
