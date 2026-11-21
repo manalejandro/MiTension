@@ -138,4 +138,32 @@
 
     <!-- Notification -->
     <string name="notification_text">It\'s time to measure your blood pressure and pulse. Tap to record it.</string>
+
+    <!-- Camera scanning -->
+    <string name="scan_open">Read values with the camera</string>
+    <string name="scan_open_hint">No photo needed: the app recognizes the numbers and you confirm them.</string>
+    <string name="scan_title">Read with the camera</string>
+    <string name="scan_back">Back</string>
+    <string name="scan_guide_title">How to aim at the monitor</string>
+    <string name="scan_guide_text">Place the monitor screen inside the frame, facing the phone and without glare. Hold the phone steady; you do not need to take any photo.</string>
+    <string name="scan_guide_caption">An example Omron monitor screen</string>
+    <string name="scan_guide_expand">View larger example</string>
+    <string name="scan_guide_close">Close</string>
+    <string name="scan_frame_hint">Aim at the screen here</string>
+    <string name="scan_reading_labels">Systolic / Diastolic / Pulse</string>
+    <string name="scan_searching">Looking for the values…</string>
+    <string name="scan_detecting">Reading… hold the phone steady</string>
+    <string name="scan_stable">Values detected. Check them before saving.</string>
+    <string name="scan_camera_inactive">The camera is not active. You can enter the values manually.</string>
+    <string name="scan_values_prefilled">Camera values filled in. Review them and save the reading.</string>
+    <string name="scan_label_sys">Systolic</string>
+    <string name="scan_label_dia">Diastolic</string>
+    <string name="scan_label_pul">Pulse</string>
+    <string name="scan_use_values">Use these values</string>
+    <string name="scan_manual">Enter manually</string>
+    <string name="scan_permission_title">Camera permission</string>
+    <string name="scan_permission_text">MiTension needs camera access to read the numbers on the monitor screen. No photo is saved.</string>
+    <string name="scan_permission_button">Allow camera</string>
+    <string name="scan_permission_settings">Open settings</string>
+    <string name="scan_error">The camera could not be started. You can enter the values manually.</string>
 </resources>

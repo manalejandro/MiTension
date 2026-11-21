@@ -281,13 +281,16 @@ private fun ReminderCard(
     }
 }
 
-private fun soundLabel(context: Context, soundUri: String?): String {
-    if (soundUri == null || soundUri == NotificationHelper.SILENT_SOUND) {
-        return context.getString(R.string.reminder_sound_default)
+private fun soundLabel(context: Context, soundUri: String?): String = when {
+    soundUri == NotificationHelper.SILENT_SOUND ->
+        context.getString(R.string.reminder_sound_silent)
+    soundUri.isNullOrBlank() ->
+        context.getString(R.string.reminder_sound_default)
+    else -> {
+        val uri = Uri.parse(soundUri)
+        RingtoneManager.getRingtone(context, uri)?.getTitle(context)
+            ?: context.getString(R.string.reminder_sound_default)
     }
-    val uri = Uri.parse(soundUri)
-    return RingtoneManager.getRingtone(context, uri)?.getTitle(context)
-        ?: context.getString(R.string.reminder_sound_default)
 }
 
 private fun buildRingtonePickerIntent(context: Context, soundUri: String?): Intent {

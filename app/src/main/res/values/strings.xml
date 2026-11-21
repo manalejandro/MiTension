@@ -138,4 +138,32 @@
 
     <!-- Notification -->
     <string name="notification_text">Es hora de medir tu tensión y tu pulso. Toca para registrarla.</string>
+
+    <!-- Camera scanning -->
+    <string name="scan_open">Leer valores con la cámara</string>
+    <string name="scan_open_hint">Sin hacer foto: la app reconoce los números y tú los confirmas.</string>
+    <string name="scan_title">Leer con la cámara</string>
+    <string name="scan_back">Volver</string>
+    <string name="scan_guide_title">Cómo enfocar el tensiómetro</string>
+    <string name="scan_guide_text">Coloca la pantalla del tensiómetro dentro del recuadro, de frente y sin reflejos. Mantén el móvil quieto; no tienes que hacer ninguna foto.</string>
+    <string name="scan_guide_caption">Ejemplo de pantalla de un tensiómetro Omron</string>
+    <string name="scan_guide_expand">Ver ejemplo grande</string>
+    <string name="scan_guide_close">Cerrar</string>
+    <string name="scan_frame_hint">Enfoca aquí la pantalla</string>
+    <string name="scan_reading_labels">Máxima / Mínima / Pulso</string>
+    <string name="scan_searching">Buscando los valores…</string>
+    <string name="scan_detecting">Leyendo… mantén el móvil quieto</string>
+    <string name="scan_stable">Valores detectados. Compruébalos antes de guardar.</string>
+    <string name="scan_camera_inactive">La cámara no está activa. Puedes introducir los valores a mano.</string>
+    <string name="scan_values_prefilled">Valores de la cámara rellenados. Revísalos y guarda la toma.</string>
+    <string name="scan_label_sys">Máxima</string>
+    <string name="scan_label_dia">Mínima</string>
+    <string name="scan_label_pul">Pulso</string>
+    <string name="scan_use_values">Usar estos valores</string>
+    <string name="scan_manual">Introducir manualmente</string>
+    <string name="scan_permission_title">Permiso de cámara</string>
+    <string name="scan_permission_text">MiTensión necesita acceder a la cámara para leer los números de la pantalla del tensiómetro. No se guarda ninguna foto.</string>
+    <string name="scan_permission_button">Permitir cámara</string>
+    <string name="scan_permission_settings">Abrir ajustes</string>
+    <string name="scan_error">No se pudo iniciar la cámara. Puedes introducir los valores manualmente.</string>
 </resources>

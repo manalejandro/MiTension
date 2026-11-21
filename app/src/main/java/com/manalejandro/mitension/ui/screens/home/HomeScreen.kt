@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MonitorHeart
@@ -52,6 +53,7 @@ import com.manalejandro.mitension.ui.components.categoryColor
 import com.manalejandro.mitension.ui.components.categoryLabelRes
 import com.manalejandro.mitension.ui.str
 import com.manalejandro.mitension.util.BloodPressure
+import com.manalejandro.mitension.util.ScanValues
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
@@ -62,6 +64,9 @@ fun HomeScreen(
     editingReading: Reading?,
     onClearEditing: () -> Unit,
     onGoToUsers: () -> Unit,
+    onOpenScan: () -> Unit,
+    scanValues: ScanValues?,
+    onScanValuesConsumed: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
@@ -89,6 +94,19 @@ fun HomeScreen(
     }
 
     val scope = rememberCoroutineScope()
+    val scanPrefilledMessage = str(R.string.scan_values_prefilled)
+    LaunchedEffect(scanValues) {
+        if (scanValues != null) {
+            sysText = BloodPressure.formatValue(scanValues.systolic)
+            diaText = BloodPressure.formatValue(scanValues.diastolic)
+            pulseText = BloodPressure.formatValue(scanValues.pulse)
+            onScanValuesConsumed()
+            // Show it from the composition scope so clearing the pending values
+            // (which cancels this effect) does not dismiss the message.
+            scope.launch { snackbarHostState.showSnackbar(scanPrefilledMessage) }
+        }
+    }
+
     val validation = BloodPressure.validate(sysText, diaText, pulseText)
 
     val lastReading = readings.firstOrNull()
@@ -185,6 +203,28 @@ fun HomeScreen(
                         color = categoryColor(lastReading.systolic, lastReading.diastolic)
                     )
                 }
+            }
+        }
+
+        Surface(
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.primaryContainer,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                BigOutlinedButton(
+                    text = str(R.string.scan_open),
+                    onClick = onOpenScan,
+                    icon = Icons.Filled.CameraAlt
+                )
+                Text(
+                    text = str(R.string.scan_open_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
         }
 

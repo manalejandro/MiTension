@@ -7,6 +7,7 @@
 ## Features
 
 - 📝 **Record readings** — enter systolic (maximum) and diastolic (minimum) pressure in mmHg (with decimals) plus heart rate (bpm). A note field is available. Values are validated before saving so the user cannot make mistakes.
+- 📷 **Live camera reading** — aim at the blood pressure monitor screen and the app recognizes SYS/DIA/PUL from the live preview, with no photo taken or stored. An Omron screen guide helps with framing; detected values are shown for the user to review and must be confirmed before they fill the form. Saving still requires the normal confirmation.
 - 💓 **Automatic classification** — each reading is classified according to international blood pressure categories (normal, elevated, hypertension stage 1/2, low) with a color badge.
 - 📈 **History with chart** — all readings for the active user are shown in a line chart (systolic, diastolic and pulse) plus a list with average and latest values.
 - ✏️ **Full CRUD** — readings can be created, edited and deleted (with confirmation).
@@ -21,17 +22,28 @@
 
 | Screen | Description |
 | --- | --- |
-| **Nueva / New** | Form to record a reading, last reading summary, active user |
+| **Nueva / New** | Form to record a reading, last reading summary, active user and camera reading button |
 | **Histórico / History** | Chart, statistics and editable/deletable list |
 | **Avisos / Alerts** | Enable, schedule and choose sound for the 3 reminders |
 | **Usuarios / Users** | Create, switch, rename and delete users |
 | **Ajustes / Settings** | Language and text size, notification settings, about |
+
+## Camera reading
+
+1. Open **Nueva / New** and tap **Leer valores con la cámara**.
+2. Allow camera access when asked. The app shows a live preview and the Omron reference image.
+3. Place the monitor display inside the frame, facing the camera and without glare. Hold the phone steady; no photo is taken.
+4. When the values remain stable, check the detected **systolic, diastolic and pulse** values.
+5. Tap **Usar estos valores** only if they are correct. They fill the form and you still have to save the reading normally.
+
+The scanner is optional: manual entry always works, and the app never saves or uploads camera frames.
 
 ## Tech stack
 
 - **Kotlin** 2.2 · **Jetpack Compose** (Material 3)
 - **Room** for local persistence (users, readings, reminders)
 - **DataStore** (Preferences) for settings
+- **CameraX** + **ML Kit text recognition** for live on-device digit recognition (no photo capture)
 - **AlarmManager** + **BroadcastReceivers** for daily reminders (rescheduled after reboot)
 - **Navigation-free tab shell** with bottom navigation bar
 - Manual DI via the `Application` class
@@ -51,9 +63,9 @@ app/src/main/java/com/manalejandro/mitension/
 │   ├── MainScreen.kt            # Bottom navigation shell
 │   ├── components/              # Reusable accessible components
 │   ├── chart/                   # Canvas line chart
-│   ├── screens/                 # onboarding, home, history, reminders, users, settings
+│   ├── screens/                 # onboarding, home, history, reminders, users, settings, scan
 │   └── theme/                   # Medical color palette + typography
-└── util/                        # Validation, locale, reminder kinds
+└── util/                        # Validation, locale, reminder kinds, OCR text parser
 ```
 
 ## Build
@@ -80,10 +92,11 @@ Run the unit tests:
 | `SCHEDULE_EXACT_ALARM` | Fire reminders at the exact configured time (Android 12+) |
 | `RECEIVE_BOOT_COMPLETED` | Restore reminders after the device restarts |
 | `VIBRATE` | Vibration on reminder notifications |
+| `CAMERA` | Live preview and frame analysis to read the tensiometer display. The camera feature is optional; manual entry always works. |
 
 ## Data & privacy
 
-All data is stored locally on the device (Room + DataStore). No data leaves the device.
+MiTension stores readings, users and settings locally on the device (Room + DataStore). The app does not upload readings or camera frames to a server. Camera frames are analyzed on the device in real time; no photo or video is captured, saved, or uploaded. The bundled Omron image is only a visual framing guide included in the app resources. If Android backup is enabled on the device, the operating system may back up app data according to the user's backup settings.
 
 ## License
 
