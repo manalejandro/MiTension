@@ -20,8 +20,19 @@ object MonitorTextParser {
 
     // Reject partial matches such as the year in "2024" or the first digits of
     // "120.55", which would otherwise become a plausible but wrong reading.
-    private val NUMBER = Regex("""(?<!\d)\d{2,3}(?:[.,]\d)?(?!\d|[.,]\d)""")
+    private val NUMBER = Regex("""(?<!\d)(?<!\d[.,])\d{2,3}(?:[.,]\d)?(?!\d|[.,]\d)""")
     private const val LABEL_WINDOW = 48
+
+    // Seven-segment digits sometimes come back as "1 18" or "7 8". When a run
+    // of 1-3 digit groups separated only by spaces adds up to 2 or 3 digits,
+    // join it. Longer runs such as "118 78 70" are left untouched.
+    private val SPACED_DIGITS = Regex("""(?<![\d.,])\d{1,3}(?:[ \t]+\d{1,3})+(?![\d.,])""")
+
+    private fun normalizeSpacedDigits(text: String): String =
+        SPACED_DIGITS.replace(text) { match ->
+            val digits = match.value.filter { it.isDigit() }
+            if (digits.length in 2..3) digits else match.value
+        }
 
     private val SYS_LABEL = labelRegex(
         "SYSTOLIC", "SISTOLICA", "SISTÓLICA", "SYST", "SIST", "SYS", "SIS",
@@ -39,7 +50,7 @@ object MonitorTextParser {
         Regex("""(?i)\b(?:${labels.joinToString("|")})\b""")
 
     fun parse(rawText: String): ScanValues? {
-        val text = rawText.trim()
+        val text = normalizeSpacedDigits(rawText.trim())
         if (text.isEmpty()) return null
 
         val hasLabels = SYS_LABEL.containsMatchIn(text) ||
@@ -52,7 +63,10 @@ object MonitorTextParser {
         val diaCandidates = labelCandidates(text, DIA_LABEL)
         val pulCandidates = labelCandidates(text, PUL_LABEL)
         if (sysCandidates.isEmpty() || diaCandidates.isEmpty() || pulCandidates.isEmpty()) {
-            return null
+            // Labels may be detected in a different block than the digits
+            // (for example a column of labels next to the LCD). Fall back to
+            // reading the numbers in order.
+            return parseWithoutLabels(text)
         }
 
         // Monitors place the number either after the label ("SYS 120") or before
@@ -79,7 +93,11 @@ object MonitorTextParser {
             val values = ScanValues(sys.value, dia.value, pul.value)
             if (isValid(values)) return values
         }
-        return null
+
+        // The labels were found but no valid label/number pairing was possible
+        // (labels and digits in separate OCR blocks, or OCR merged them badly).
+        // Try the numbers in reading order instead of returning nothing.
+        return parseWithoutLabels(text, orderedOnly = true)
     }
 
     private data class LabelCandidate(
@@ -161,7 +179,7 @@ object MonitorTextParser {
      * usual SYS-DIA-PUL order first, then any combination that passes the
      * clinical range and relation checks.
      */
-    private fun parseWithoutLabels(text: String): ScanValues? {
+    private fun parseWithoutLabels(text: String, orderedOnly: Boolean = false): ScanValues? {
         val list = candidates(text)
         if (list.size < 3) return null
 
@@ -173,6 +191,8 @@ object MonitorTextParser {
                 }
             }
         }
+
+        if (orderedOnly) return null
 
         for (i in list.indices) {
             for (j in list.indices) {

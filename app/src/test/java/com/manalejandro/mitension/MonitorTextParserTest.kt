@@ -91,4 +91,36 @@ class MonitorTextParserTest {
         val text = "OMRON\nSYS mmHg\n128\nDIA mmHg\n82\nPUL /min\n67\n12:45"
         assertEquals(ScanValues(128.0, 82.0, 67.0), MonitorTextParser.parse(text))
     }
+
+    @Test
+    fun readsLabelsAndValuesInSeparateBlocks() {
+        val text = "OMRON\nSYS\nmmHg\nDIA\nmmHg\nPULSE\n/min\n118\n78\n70\nIntelli sense"
+        assertEquals(ScanValues(118.0, 78.0, 70.0), MonitorTextParser.parse(text))
+    }
+
+    @Test
+    fun joinsSevenSegmentDigitsSplitBySpaces() {
+        val text = "SYS 1 18\nDIA 7 8\nPULSE 70"
+        assertEquals(ScanValues(118.0, 78.0, 70.0), MonitorTextParser.parse(text))
+    }
+
+    @Test
+    fun joinsSpacedDigitsAfterLabel() {
+        val text = "SYS 11 8 DIA 78 PUL 70"
+        assertEquals(ScanValues(118.0, 78.0, 70.0), MonitorTextParser.parse(text))
+    }
+
+    @Test
+    fun realMlKitOutputNeedsTheLcdFallback() {
+        // Exact strings produced by ML Kit on the bundled Omron guide and on
+        // simulated camera frames. OCR alone cannot recover the segmented
+        // digits; the LCD reader anchors on these captions instead.
+        val rawOutputs = listOf(
+            "SYS\nmmHa\nDIA\nmmHg\nPULSE\nImin\nOMROn\n8\nSTART\nSTOP\nintelu",
+            "SYS\nDIA\nmmkq\nPULSE\nImin\nomRON\n78\nSTART\nSTOP",
+            "SYS\nDIA\nmmHg\nPULSE\nImin\noMROn\nSTART\nSTOP\nintet",
+            "SYS\nmmHg\nDIA\nmmHg\nPULSE\nImin\nOMRON\n78\nSTART\nSTOP\nIntelli\nsense"
+        )
+        rawOutputs.forEach { assertNull(MonitorTextParser.parse(it)) }
+    }
 }

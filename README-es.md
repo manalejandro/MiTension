@@ -43,7 +43,7 @@ El escáner es opcional: la introducción manual siempre está disponible y la a
 - **Kotlin** 2.2 · **Jetpack Compose** (Material 3)
 - **Room** para la persistencia local (usuarios, tomas, recordatorios)
 - **DataStore** (Preferences) para los ajustes
-- **CameraX** + **ML Kit text recognition** para reconocer dígitos en vivo en el dispositivo (sin capturar fotos)
+- **CameraX** + **ML Kit text recognition** y un lector directo de dígitos de siete segmentos para reconocer los valores en vivo en el dispositivo (sin capturar fotos)
 - **AlarmManager** + **BroadcastReceivers** para los recordatorios diarios (se reprograman tras reiniciar el teléfono)
 - Interfaz con barra de navegación inferior (sin librería de navegación)
 - Inyección de dependencias manual a través de la clase `Application`

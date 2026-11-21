@@ -43,7 +43,7 @@ The scanner is optional: manual entry always works, and the app never saves or u
 - **Kotlin** 2.2 · **Jetpack Compose** (Material 3)
 - **Room** for local persistence (users, readings, reminders)
 - **DataStore** (Preferences) for settings
-- **CameraX** + **ML Kit text recognition** for live on-device digit recognition (no photo capture)
+- **CameraX** + **ML Kit text recognition** and a direct seven-segment LCD reader for live on-device digit recognition (no photo capture)
 - **AlarmManager** + **BroadcastReceivers** for daily reminders (rescheduled after reboot)
 - **Navigation-free tab shell** with bottom navigation bar
 - Manual DI via the `Application` class

@@ -2,11 +2,15 @@ package com.manalejandro.mitension.ui.screens.scan
 
 import android.Manifest
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
 import android.util.Log
+import android.util.Size
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -16,6 +20,8 @@ import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
@@ -67,6 +73,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -77,6 +84,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -85,11 +93,17 @@ import com.manalejandro.mitension.ui.components.BigButton
 import com.manalejandro.mitension.ui.components.BigOutlinedButton
 import com.manalejandro.mitension.ui.str
 import com.manalejandro.mitension.util.BloodPressure
+import com.manalejandro.mitension.util.MonitorLcdReader
 import com.manalejandro.mitension.util.MonitorTextParser
 import com.manalejandro.mitension.util.ScanValues
 import java.util.concurrent.Executors
 
-private data class Detection(val values: ScanValues? = null, val stable: Boolean = false)
+private data class Detection(
+    val values: ScanValues? = null,
+    val stable: Boolean = false,
+    val rawText: String = "",
+    val frames: Int = 0
+)
 
 /**
  * Full screen camera scanner. It analyses preview frames with ML Kit, so no
@@ -114,6 +128,10 @@ fun ScanScreen(
     var cameraFailed by remember { mutableStateOf(false) }
     var detection by remember { mutableStateOf(Detection()) }
     var showGuide by remember { mutableStateOf(false) }
+    var showRawText by remember { mutableStateOf(false) }
+    val debuggable = remember(context) {
+        (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    }
 
     val mainExecutor = remember { ContextCompat.getMainExecutor(context) }
     val analyzer = remember {
@@ -206,6 +224,12 @@ fun ScanScreen(
 
             ValuesRow(values = if (cameraActive) detection.values else null)
 
+            if (debuggable) {
+                TextButton(onClick = { showRawText = true }) {
+                    Text(str(R.string.scan_debug_raw))
+                }
+            }
+
             BigButton(
                 text = str(R.string.scan_use_values),
                 onClick = { detection.values?.let(onValuesConfirmed) },
@@ -246,6 +270,36 @@ fun ScanScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showGuide = false }) {
+                    Text(str(R.string.scan_guide_close))
+                }
+            }
+        )
+    }
+
+    if (showRawText) {
+        AlertDialog(
+            onDismissRequest = { showRawText = false },
+            title = { Text(str(R.string.scan_debug_raw_title)) },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 360.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        str(R.string.scan_debug_frames, detection.frames),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                    Text(
+                        detection.rawText.ifBlank { str(R.string.scan_debug_empty) },
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showRawText = false }) {
                     Text(str(R.string.scan_guide_close))
                 }
             }
@@ -564,6 +618,17 @@ private class CameraController(private val context: Context) {
             previewUseCase.surfaceProvider = previewView.surfaceProvider
         }
         val imageAnalysis = ImageAnalysis.Builder()
+            // Small LCD digits need more than the 640x480 default.
+            .setResolutionSelector(
+                ResolutionSelector.Builder()
+                    .setResolutionStrategy(
+                        ResolutionStrategy(
+                            Size(1280, 720),
+                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                        )
+                    )
+                    .build()
+            )
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
             .also { it.setAnalyzer(executor, analyzer) }
@@ -595,6 +660,7 @@ private class MonitorAnalyzer(
     private var lastProcessedAt = 0L
     private var previous: ScanValues? = null
     private var repeats = 0
+    private var frames = 0
 
     @ExperimentalGetImage
     override fun analyze(imageProxy: ImageProxy) {
@@ -606,6 +672,7 @@ private class MonitorAnalyzer(
             }
         }
 
+        var activeBitmap: Bitmap? = null
         try {
             val now = System.currentTimeMillis()
             if (now - lastProcessedAt < 400) {
@@ -618,28 +685,80 @@ private class MonitorAnalyzer(
                 return
             }
             lastProcessedAt = now
-            val inputImage = InputImage.fromMediaImage(
-                mediaImage,
-                imageProxy.imageInfo.rotationDegrees
-            )
+            frames++
+
+            // The LCD reader needs a bitmap in the same orientation as the OCR
+            // bounding boxes, so rotate once and give both readers that image.
+            val rotation = imageProxy.imageInfo.rotationDegrees
+            val original = imageProxy.toBitmap()
+            activeBitmap = original
+            if (rotation != 0) {
+                val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
+                val rotated = Bitmap.createBitmap(
+                    original, 0, 0, original.width, original.height, matrix, true
+                )
+                original.recycle()
+                activeBitmap = rotated
+            }
+            val frame = activeBitmap!!
+            val inputImage = InputImage.fromBitmap(frame, 0)
             recognizer.process(inputImage)
                 .addOnSuccessListener { visionText ->
-                    val values = MonitorTextParser.parse(visionText.text)
+                    val text = visionText.text
+                    val labels = labelBoxes(visionText)
+                    val lcdValues = try {
+                        MonitorLcdReader.read(frame, labels)
+                    } catch (e: Exception) {
+                        Log.w("ScanScreen", "LCD reading failed", e)
+                        null
+                    }
+                    val source = if (lcdValues != null) "LCD" else "OCR"
+                    val values = lcdValues ?: MonitorTextParser.parse(text)
+                    Log.d("ScanScreen", "$source: ${text.replace("\n", " | ")}")
+                    val raw = "$text\n[$source]"
                     if (values == null) {
                         previous = null
                         repeats = 0
-                        onDetection(Detection())
+                        onDetection(Detection(rawText = raw, frames = frames))
                     } else {
                         repeats = if (values == previous) repeats + 1 else 1
                         previous = values
-                        onDetection(Detection(values, repeats >= 2))
+                        onDetection(
+                            Detection(
+                                values = values,
+                                stable = repeats >= 2,
+                                rawText = raw,
+                                frames = frames
+                            )
+                        )
                     }
                 }
-                .addOnFailureListener { onDetection(Detection()) }
-                .addOnCompleteListener { close() }
+                .addOnFailureListener { onDetection(Detection(frames = frames)) }
+                .addOnCompleteListener {
+                    frame.recycle()
+                    close()
+                }
         } catch (e: Exception) {
             Log.e("ScanScreen", "Frame analysis failed", e)
+            activeBitmap?.recycle()
             close()
+        }
+    }
+
+    /** ML Kit captions anchor the seven-segment digits on the monitor screen. */
+    private fun labelBoxes(text: Text): List<MonitorLcdReader.Label> {
+        val elements = text.textBlocks.flatMap { it.lines }.flatMap { it.elements }
+        val patterns = mapOf(
+            MonitorLcdReader.Field.SYS to
+                Regex("(?i)^(SYS|SYST|SIST|SIS|SYSTOLIC|SISTOLICA|SISTÓLICA|MAX)$"),
+            MonitorLcdReader.Field.DIA to
+                Regex("(?i)^(DIA|DIAST|DIASTOLIC|DIASTOLICA|DIASTÓLICA|MIN)$"),
+            MonitorLcdReader.Field.PUL to
+                Regex("(?i)^(PUL|PULS|PULSE|PULSO|PULSACIONES|HEART|FC)$")
+        )
+        return patterns.mapNotNull { (field, pattern) ->
+            val box = elements.firstOrNull { pattern.matches(it.text) }?.boundingBox
+            box?.let { MonitorLcdReader.Label(field, it) }
         }
     }
 

@@ -166,4 +166,8 @@
     <string name="scan_permission_button">Allow camera</string>
     <string name="scan_permission_settings">Open settings</string>
     <string name="scan_error">The camera could not be started. You can enter the values manually.</string>
+    <string name="scan_debug_raw">View detected text</string>
+    <string name="scan_debug_raw_title">Text read by OCR</string>
+    <string name="scan_debug_frames">Frames analysed: %1$d</string>
+    <string name="scan_debug_empty">No text was detected in the image.</string>
 </resources>
